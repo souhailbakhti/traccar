@@ -261,6 +261,18 @@ public class TeltonikaProtocolDecoder extends BaseProtocolDecoder {
         register(239, null, (p, b) -> p.set(Position.KEY_IGNITION, b.readUnsignedByte() > 0));
         register(240, null, (p, b) -> p.set(Position.KEY_MOTION, b.readUnsignedByte() > 0));
         register(241, null, (p, b) -> p.set(Position.KEY_OPERATOR, b.readUnsignedInt()));
+        register(246, fmbXXX, (p, b) -> {
+            p.set(Position.KEY_ALARM, b.readUnsignedByte() >= 0 ? Position.ALARM_TOW : null);
+        });
+        register(247, fmbXXX, (p, b) -> {
+            p.set(Position.KEY_ALARM, b.readUnsignedByte() > 0 ? Position.ALARM_ACCIDENT : null);
+        });
+        register(249, fmbXXX, (p, b) -> {
+            p.set(Position.KEY_ALARM, b.readUnsignedByte() == 1 ? Position.ALARM_JAMMING : null);
+        });
+        register(252, fmbXXX, (p, b) -> {
+            p.set(Position.KEY_ALARM, b.readUnsignedByte() >= 0 ? Position.ALARM_REMOVING : null);
+        });
         register(253, null, (p, b) -> {
             switch (b.readUnsignedByte()) {
                 case 1:
