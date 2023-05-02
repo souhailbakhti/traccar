@@ -33,9 +33,11 @@ import org.traccar.handler.DistanceHandler;
 import org.traccar.handler.EngineHoursHandler;
 import org.traccar.handler.FilterHandler;
 import org.traccar.handler.GeocoderHandler;
+import org.traccar.handler.GeofenceHandler;
 import org.traccar.handler.GeolocationHandler;
 import org.traccar.handler.HemisphereHandler;
 import org.traccar.handler.MotionHandler;
+import org.traccar.handler.NetworkForwarderHandler;
 import org.traccar.handler.NetworkMessageHandler;
 import org.traccar.handler.OpenChannelHandler;
 import org.traccar.handler.RemoteAddressHandler;
@@ -60,15 +62,15 @@ public abstract class BasePipelineFactory extends ChannelInitializer<Channel> {
 
     private final Injector injector;
     private final TrackerConnector connector;
+    private final Config config;
     private final String protocol;
-    private final boolean instantAcknowledgement;
     private final int timeout;
 
     public BasePipelineFactory(TrackerConnector connector, Config config, String protocol) {
         this.injector = Main.getInjector();
         this.connector = connector;
+        this.config = config;
         this.protocol = protocol;
-        instantAcknowledgement = config.getBoolean(Keys.SERVER_INSTANT_ACKNOWLEDGEMENT);
         int timeout = config.getInteger(Keys.PROTOCOL_TIMEOUT.withPrefix(protocol));
         if (timeout == 0) {
             this.timeout = config.getInteger(Keys.SERVER_TIMEOUT);
@@ -115,9 +117,15 @@ public abstract class BasePipelineFactory extends ChannelInitializer<Channel> {
             pipeline.addLast(new IdleStateHandler(timeout, 0, 0));
         }
         pipeline.addLast(new OpenChannelHandler(connector));
+        if (config.hasKey(Keys.SERVER_FORWARD)) {
+            int port = config.getInteger(Keys.PROTOCOL_PORT.withPrefix(protocol));
+            var handler = new NetworkForwarderHandler(port);
+            injector.injectMembers(handler);
+            pipeline.addLast(handler);
+        }
         pipeline.addLast(new NetworkMessageHandler());
         pipeline.addLast(new StandardLoggingHandler(protocol));
-        if (!instantAcknowledgement) {
+        if (!config.getBoolean(Keys.SERVER_INSTANT_ACKNOWLEDGEMENT)) {
             pipeline.addLast(new AcknowledgementHandler());
         }
 
@@ -142,6 +150,7 @@ public abstract class BasePipelineFactory extends ChannelInitializer<Channel> {
                 DistanceHandler.class,
                 RemoteAddressHandler.class,
                 FilterHandler.class,
+                GeofenceHandler.class,
                 GeocoderHandler.class,
                 SpeedLimitHandler.class,
                 MotionHandler.class,
