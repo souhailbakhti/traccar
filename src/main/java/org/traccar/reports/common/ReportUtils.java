@@ -100,11 +100,11 @@ public class ReportUtils {
 
     public double calculateFuel(Position firstPosition, Position lastPosition) {
 
-        if (firstPosition.getAttributes().get(Position.KEY_FUEL_LEVEL) != null
-                && lastPosition.getAttributes().get(Position.KEY_FUEL_LEVEL) != null) {
+        if (firstPosition.getAttributes().get(Position.KEY_FUEL_CONSUMPTION) != null
+                && lastPosition.getAttributes().get(Position.KEY_FUEL_CONSUMPTION) != null) {
 
-            BigDecimal value = BigDecimal.valueOf(firstPosition.getDouble(Position.KEY_FUEL_LEVEL)
-                    - lastPosition.getDouble(Position.KEY_FUEL_LEVEL));
+            BigDecimal value = BigDecimal.valueOf(lastPosition.getDouble(Position.KEY_FUEL_CONSUMPTION)
+                    - firstPosition.getDouble(Position.KEY_FUEL_CONSUMPTION));
             return value.setScale(1, RoundingMode.HALF_EVEN).doubleValue();
         }
         return 0;
