@@ -29,6 +29,7 @@ public class HereGeocoder extends JsonGeocoder {
         url += "&app_id=" + id;
         url += "&app_code=" + key;
         url += "&apiKey=" + key;
+        url += "&politicalView=MAR";
         if (language != null) {
             url += "&language=" + language;
         }
